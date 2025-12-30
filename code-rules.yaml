@@ -1,0 +1,180 @@
+rules:
+# ============================================================================
+# IDA Security Scanner - Detection Rules
+# SAST rules for IDA Pro decompiled C code
+# ============================================================================
+
+# ---------------------------
+# Buffer Overflow: gets()
+# ---------------------------
+- id: BUFFER_OVERFLOW_GETS
+  languages: [c]
+  message: |
+    CRITICAL: gets() - Buffer Overflow
+    
+    The gets() function reads input without ANY size limit.
+    There is NO safe way to use this function.
+  metadata:
+    cwe: 'CWE-120'
+    title: "gets() Buffer Overflow"
+  pattern: gets($BUF)
+  severity: CRITICAL
+
+# ---------------------------
+# Buffer Overflow: scanf %s
+# ---------------------------
+- id: BUFFER_OVERFLOW_SCANF
+  languages: [c]
+  message: |
+    CRITICAL: scanf("%s") - Unbounded Input
+    
+    The %s format specifier without width limit reads until whitespace.
+    Fix: Use width specifier like scanf("%255s", buf).
+  metadata:
+    cwe: 'CWE-120'
+    title: "scanf %s Unbounded"
+  pattern: scanf("%s", $BUF)
+  severity: CRITICAL
+
+# ---------------------------
+# Format String: printf(argv[N])
+# ---------------------------
+- id: FORMAT_STRING_ARGV
+  languages: [c]
+  message: |
+    CRITICAL: Format String Attack
+    
+    Command-line argument used directly as format string.
+    Attacker can use %x to leak stack, %n to write memory.
+  metadata:
+    cwe: 'CWE-134'
+    title: "Format String"
+  pattern-either:
+  - pattern: printf(argv[$N])
+  - pattern: fprintf($FD, argv[$N])
+  - pattern: sprintf($DST, argv[$N])
+  severity: CRITICAL
+
+# ---------------------------
+# Command Injection: strcat + system
+# ---------------------------
+- id: COMMAND_INJECTION_STRCAT
+  languages: [c]
+  message: |
+    HIGH: Command Injection - strcat() then system()
+    
+    Data is concatenated to a command string then executed.
+    Shell metacharacters (;|`$) can inject arbitrary commands.
+  metadata:
+    cwe: 'CWE-78'
+    title: "Command Injection"
+  pattern: |
+    strcat($CMD, ...);
+    ...
+    system($CMD);
+  severity: HIGH
+
+# ---------------------------
+# Command Injection: sprintf + system
+# ---------------------------
+- id: COMMAND_INJECTION_SPRINTF
+  languages: [c]
+  message: |
+    HIGH: Command Injection - sprintf() then system()
+    
+    Command built with sprintf() then executed with system().
+  metadata:
+    cwe: 'CWE-78'
+    title: "Command Injection"
+  pattern: |
+    sprintf($CMD, ...);
+    ...
+    system($CMD);
+  severity: HIGH
+
+# ---------------------------
+# Privilege Escalation: setreuid + system
+# ---------------------------
+- id: PRIVESC_SETREUID
+  languages: [c]
+  message: |
+    HIGH: Privilege Escalation
+    
+    setreuid() followed by system() call.
+    Common in SUID binaries - target for exploitation.
+  metadata:
+    cwe: 'CWE-269'
+    title: "Privilege Escalation"
+  pattern: |
+    setreuid(...);
+    ...
+    system(...);
+  severity: HIGH
+
+# ---------------------------
+# Privilege Escalation: setuid + system
+# ---------------------------
+- id: PRIVESC_SETUID
+  languages: [c]
+  message: |
+    HIGH: Privilege Escalation
+    
+    setuid() followed by system() call.
+  metadata:
+    cwe: 'CWE-269'
+    title: "Privilege Escalation"
+  pattern: |
+    setuid(...);
+    ...
+    system(...);
+  severity: HIGH
+
+# ---------------------------
+# Backdoor Pattern
+# ---------------------------
+- id: BACKDOOR_SHELL
+  languages: [c]
+  message: |
+    MEDIUM: Potential Backdoor
+    
+    execve() spawning a shell detected.
+    Could be admin functionality, CTF target, or actual backdoor.
+  metadata:
+    cwe: 'CWE-506'
+    title: "Shell Backdoor"
+  pattern-either:
+  - pattern: execve("/bin/bash", ...)
+  - pattern: execve("/bin/sh", ...)
+  severity: MEDIUM
+
+# ---------------------------
+# Dangerous strcpy
+# ---------------------------
+- id: DANGEROUS_STRCPY
+  languages: [c]
+  message: |
+    MEDIUM: Unsafe strcpy()
+    
+    strcpy() does not check destination buffer size.
+    Consider using strncpy() or strlcpy().
+  metadata:
+    cwe: 'CWE-120'
+    title: "Unsafe strcpy"
+  pattern: strcpy($DST, $SRC)
+  severity: MEDIUM
+
+# ---------------------------
+# Dangerous sprintf
+# ---------------------------
+- id: DANGEROUS_SPRINTF
+  languages: [c]
+  message: |
+    MEDIUM: Unsafe sprintf()
+    
+    sprintf() does not check destination buffer size.
+    Consider using snprintf().
+  metadata:
+    cwe: 'CWE-120'
+    title: "Unsafe sprintf"
+  pattern: sprintf($DST, $FMT, ...)
+  severity: MEDIUM

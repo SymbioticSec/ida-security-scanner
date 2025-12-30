@@ -1,0 +1,18 @@
+{
+  "IDAMetadataDescriptorVersion": 1,
+  "plugin": {
+    "name": "ida-security-scanner",
+    "entryPoint": "symbiotic_ida_plugin",
+    "version": "0.0.1",
+    "idaVersions": ">=9.0",
+    "categories": [
+      "security-analysis",
+      "decompilation"
+    ],
+    "description": "Security scanner combining IDA decompilation with SAST rules to detect vulnerabilities in pseudocode",
+    "license": "MIT",
+    "urls": {
+      "repository": "https://github.com/SymbioticSec/ida-security-scanner"
+    }
+  }
+}
