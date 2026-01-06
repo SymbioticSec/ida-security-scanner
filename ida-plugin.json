@@ -5,14 +5,33 @@
     "entryPoint": "symbiotic_ida_plugin",
     "version": "0.0.1",
     "idaVersions": ">=9.0",
+    "platforms": [
+      "windows-x86_64",
+      "linux-x86_64",
+      "macos-x86_64",
+      "macos-aarch64"
+    ],
     "categories": [
       "security-analysis",
       "decompilation"
+    ],
+    "keywords": [
+      "security",
+      "vulnerability",
+      "sast",
+      "scanner",
+      "opengrep"
     ],
     "description": "Security scanner combining IDA decompilation with SAST rules to detect vulnerabilities in pseudocode",
     "license": "MIT",
     "urls": {
       "repository": "https://github.com/SymbioticSec/ida-security-scanner"
-    }
+    },
+    "authors": [
+      {
+        "name": "Symbiotic Security",
+        "email": "anthony.bondu@symbioticsec.ai"
+      }
+    ]
   }
 }
