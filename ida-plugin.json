@@ -27,6 +27,7 @@
     "urls": {
       "repository": "https://github.com/SymbioticSec/ida-security-scanner"
     },
+    "logoPath": "symbiotic-logo.jpg",
     "authors": [
       {
         "name": "Symbiotic Security",
