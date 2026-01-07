@@ -72,24 +72,17 @@ class SymbioticScanner:
                 code = str(cfunc)
                 code_lines = code.split('\n')
                 
-                # Build line → EA mapping using eamap
                 line_ea_map = {}
                 try:
-                    # Get the pseudocode structure
                     sv = cfunc.get_pseudocode()
-                    
-                    # For each line in pseudocode, try to find corresponding EA
+
                     for line_idx in range(len(sv)):
                         sl = sv[line_idx]
-                        # Get the line text and look for associated addresses
                         line_text = ida_lines.tag_remove(sl.line)
-                        
-                        # Try to find an EA for this line by checking eamap
-                        # eamap maps EA -> ctree items, we need reverse
+
                         found_ea = idaapi.BADADDR
                         for item_ea, items in cfunc.eamap.items():
                             if item_ea != idaapi.BADADDR:
-                                # Check if any item on this line
                                 for item in items:
                                     if hasattr(item, 'loc') and item.loc:
                                         if item.loc.line == line_idx:
@@ -99,15 +92,14 @@ class SymbioticScanner:
                                     break
                         
                         line_ea_map[line_idx] = found_ea
-                        
+
                 except Exception as e:
                     print(f"[Symbiotic] EA mapping error: {e}")
-                
-                # Cache for later use - include code lines for snippet matching
+
                 self._pseudocode_cache[ea] = {
                     'lines': code_lines,
                     'line_ea_map': line_ea_map,
-                    'cfunc': cfunc  # Keep cfunc reference for later annotation
+                    'cfunc': cfunc
                 }
                 return code
         except Exception as e:
@@ -169,7 +161,6 @@ class SymbioticScanner:
         temp_dir, temp_file = self.create_temp_file(code, filename)
 
         try:
-            # Build command: opengrep-core -json -rules <rules> -lang <lang> <file>
             cmd = [self.config.opengrep_path, "-json"]
 
             if self.config.rules_path and os.path.exists(self.config.rules_path):
@@ -182,7 +173,6 @@ class SymbioticScanner:
 
             print(f"[Symbiotic] Executing: {' '.join(cmd)}")
 
-            # Use Popen for cancel support
             self._current_process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -207,14 +197,6 @@ class SymbioticScanner:
             if stderr_out:
                 print(f"[Symbiotic] Stderr: {stderr_out[:500]}")
 
-            # Debug: save scanned code for inspection
-            debug_file = os.path.join(os.path.expanduser("~"), "symbiotic_last_scan.c")
-            with open(debug_file, "w") as f:
-                f.write(code)
-            print(f"[Symbiotic] Debug: saved scanned code to {debug_file}")
-            print(f"[Symbiotic] Raw output length: {len(output)} chars")
-
-            # Parse opengrep JSON output format and add source for line extraction
             source_lines = code.split('\n')
             converted_output = self._convert_opengrep_output(output, source_lines)
             
@@ -242,19 +224,13 @@ class SymbioticScanner:
                 print("[Symbiotic] No output from opengrep")
                 return json.dumps({"fail_results": []})
             
-            # Opengrep outputs a dot followed by newline before the JSON
-            # Find the start of the JSON object
             json_start = raw_output.find('{')
             if json_start == -1:
                 print("[Symbiotic] No JSON found in output")
                 return json.dumps({"fail_results": []})
-            
+
             json_output = raw_output[json_start:]
-            print(f"[Symbiotic] JSON starts at position {json_start}")
-            
             data = json.loads(json_output)
-            
-            # Opengrep returns {"version": "...", "results": [...], "errors": [...]}
             results = data.get("results", [])
             print(f"[Symbiotic] Found {len(results)} results in opengrep output")
             
@@ -263,17 +239,14 @@ class SymbioticScanner:
                 check_id = r.get("check_id", "UNKNOWN")
                 extra = r.get("extra", {})
                 metadata = extra.get("metadata", {})
-                
-                # Get line numbers
+
                 start_info = r.get("start", {})
                 end_info = r.get("end", {})
                 start_line = start_info.get("line", 0)
                 end_line = end_info.get("line", start_line)
-                
-                # Extract the actual vulnerable code snippet from source
+
                 snippet = ""
                 if source_lines and start_line > 0:
-                    # Get lines from start_line to end_line (1-indexed)
                     snippet_lines = source_lines[start_line - 1:end_line]
                     snippet = "\n".join(snippet_lines)
                 
@@ -331,17 +304,15 @@ class SymbioticScanner:
         result["address"] = hex(ea)
         result["scan_type"] = "single_function"
 
-        # Annotate in IDA
         self.annotate_findings(result, ea)
 
         return result
 
     def scan_function_async(self, ea, callback):
-        """Scan function in background thread - collect IDA data first in main thread"""
+        """Scan function in background thread"""
         func_name = idc.get_func_name(ea)
         print(f"[Symbiotic] Scanning function (async): {func_name} at {hex(ea)}")
 
-        # Extract pseudocode in main thread
         code = self.extract_pseudocode(ea)
         if not code:
             print("[Symbiotic] Pseudocode not available, using disassembly")
@@ -352,14 +323,12 @@ class SymbioticScanner:
 
         print(f"[Symbiotic] Extracted code ({len(code)} chars)")
 
-        # Run scan in background thread
         def _scan_and_callback():
             result = self.scan_code(code, "c")
             result["function_name"] = func_name
             result["address"] = hex(ea)
             result["scan_type"] = "single_function"
 
-            # Annotate in main thread
             def _annotate_and_show():
                 self.annotate_findings(result, ea)
                 callback(result)
@@ -386,7 +355,6 @@ class SymbioticScanner:
         total_funcs = len(all_funcs)
         print(f"[Symbiotic] Found {total_funcs} functions to scan")
 
-        # Collect all pseudo-code
         all_code = []
         func_line_map = {}
         current_line = 1
@@ -423,12 +391,11 @@ class SymbioticScanner:
         return result
 
     def scan_all_functions_async(self, callback):
-        """Scan all functions in background thread - collect IDA data first in main thread"""
+        """Scan all functions in background thread"""
         print("\n" + "=" * 70)
         print("[Symbiotic] SCAN ALL FUNCTIONS (async)")
         print("=" * 70)
 
-        # IMPORTANT: Collect all IDA data in main thread FIRST
         all_funcs = []
         for func_ea in idautils.Functions():
             func = ida_funcs.get_func(func_ea)
@@ -439,14 +406,12 @@ class SymbioticScanner:
         total_funcs = len(all_funcs)
         print(f"[Symbiotic] Found {total_funcs} functions to scan")
 
-        # Collect all pseudo-code in main thread with UI updates
         all_code = []
         func_line_map = {}
         current_line = 1
-        
+
         for i, (func_ea, func_name) in enumerate(all_funcs):
-            # Update wait box to show progress
-            if i % 5 == 0:  # Update every 5 functions to avoid UI overhead
+            if i % 5 == 0:
                 ida_kernwin.replace_wait_box(f"Decompiling function {i+1}/{total_funcs}...")
             
             code = self.extract_pseudocode(func_ea)
@@ -468,20 +433,16 @@ class SymbioticScanner:
 
         combined_code = "\n".join(all_code)
         print(f"[Symbiotic] Combined {len(func_line_map)} functions ({len(combined_code)} chars)")
-        
-        # Update wait box for scan phase
+
         ida_kernwin.replace_wait_box("Running opengrep scan...")
 
-        # Now run the actual scan in background thread
         def _scan_and_callback():
-            # Only subprocess call happens here - no IDA API
             result = self.scan_code(combined_code, "c")
             result["total_functions"] = total_funcs
             result["functions_scanned"] = len(func_line_map)
             result["scan_type"] = "all_functions"
             result["func_line_map"] = func_line_map
 
-            # Annotate must happen in main thread
             def _annotate_and_show():
                 self.annotate_all_functions(result, func_line_map)
                 callback(result)
@@ -540,7 +501,6 @@ class SymbioticScanner:
             if not findings:
                 return
 
-            # Group findings by function
             func_vulns = {}
             for finding in findings:
                 loc = finding.get("location", {})
@@ -553,12 +513,10 @@ class SymbioticScanner:
                         func_vulns[func_ea].append(finding)
                         break
 
-            # Annotate each function with line-specific comments
             for func_ea, vulns in func_vulns.items():
                 func_name = func_line_map[func_ea]["name"]
                 func_start_line = func_line_map[func_ea]["start_line"]
-                
-                # Try to add inline comments using Hex-Rays API (ida-pro-mcp method)
+
                 try:
                     cfunc = ida_hexrays.decompile(func_ea)
                     if cfunc:
@@ -573,17 +531,13 @@ class SymbioticScanner:
                             cmt_text = f"VULN: {title}"
                             if cwe:
                                 cmt_text += f" ({cwe})"
-                            
-                            # Find the EA corresponding to this vulnerability's snippet
+
                             target_ea = None
                             if snippet:
                                 snippet_clean = snippet.strip().split('\n')[0].strip()
-                                # Search through pseudocode lines
                                 for line_idx in range(len(sv)):
                                     line_text = ida_lines.tag_remove(sv[line_idx].line)
                                     if snippet_clean in line_text:
-                                        # Found the line, now find EA for this line
-                                        # Use reverse mapping from eamap
                                         for ea_addr, items in eamap.items():
                                             if ea_addr != idaapi.BADADDR:
                                                 target_ea = ea_addr
@@ -592,13 +546,11 @@ class SymbioticScanner:
                             
                             if target_ea and target_ea in eamap:
                                 nearest_ea = eamap[target_ea][0].ea
-                                
-                                # Clear orphan comments first
+
                                 if cfunc.has_orphan_cmts():
                                     cfunc.del_orphan_cmts()
                                     cfunc.save_user_cmts()
-                                
-                                # Try different itp values until comment is not orphaned
+
                                 tl = idaapi.treeloc_t()
                                 tl.ea = nearest_ea
                                 success = False
@@ -619,8 +571,7 @@ class SymbioticScanner:
                                     
                 except Exception as e:
                     print(f"[Symbiotic] Inline comment error: {e}")
-                
-                # Also add function-level comment as visible fallback
+
                 comments = []
                 for v in vulns:
                     title = v.get("title", "Vulnerability")
@@ -634,7 +585,6 @@ class SymbioticScanner:
                     comments.append(comment)
 
                 existing = idc.get_func_cmt(func_ea, 0) or ""
-                # Clear previous vuln comments
                 if "[VULN]" in existing:
                     existing = "\n".join([l for l in existing.split("\n") if "[VULN]" not in l])
                 new_comment = existing + "\n" + "\n".join(comments) if existing.strip() else "\n".join(comments)

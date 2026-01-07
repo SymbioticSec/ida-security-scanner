@@ -4,11 +4,16 @@
 from .config import SymbioticConfig, configure_symbiotic
 from .scanner import SymbioticScanner
 from .viewer import SymbioticResultsViewer
-from .ai_provider import GeminiProvider, explain_vulnerability, generate_poc, analyze_function
+from .ai_provider import AIProvider
+from .ai_prompts import explain_vulnerability, generate_poc, analyze_function
+
 __all__ = [
     "SymbioticConfig", 
     "SymbioticScanner", 
     "SymbioticResultsViewer",
-    "GeminiProvider",
-    "configure_symbiotic"
+    "AIProvider",
+    "configure_symbiotic",
+    "explain_vulnerability",
+    "generate_poc",
+    "analyze_function"
 ]

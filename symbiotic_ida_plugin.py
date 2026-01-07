@@ -13,7 +13,6 @@ import ida_kernwin
 import ida_funcs
 import idc
 
-# Add symbiotic module to path
 PLUGIN_DIR = os.path.dirname(__file__)
 if PLUGIN_DIR not in sys.path:
     sys.path.insert(0, PLUGIN_DIR)
@@ -269,10 +268,11 @@ Choose an action:"""
 
     def ask_ai_about_function(self):
         """Ask AI to analyze the current function"""
-        from symbiotic.ai_provider import GeminiProvider, analyze_function
+        from symbiotic.ai_provider import AIProvider
+        from symbiotic.ai_prompts import analyze_function
         
         if not self.config.is_ai_configured():
-            ida_kernwin.warning("Gemini API not configured!\n\nGo to: Edit > Plugins > Symbiotic Configuration > AI")
+            ida_kernwin.warning("AI not configured!\n\nAdd AI_MODEL and AI_API_KEY to .env file")
             return
         
         ea = ida_kernwin.get_screen_ea()
@@ -298,7 +298,11 @@ Choose an action:"""
         ida_kernwin.show_wait_box(f"Analyzing {func_name} with AI...")
         
         try:
-            provider = GeminiProvider(model=self.config.gemini_model, api_key=self.config.gemini_api_key)
+            provider = AIProvider(
+                model=self.config.ai_model, 
+                api_key=self.config.ai_api_key,
+                api_base=self.config.ai_api_base
+            )
             analysis = analyze_function(provider, pseudocode, func_name)
             ida_kernwin.hide_wait_box()
             

@@ -10,7 +10,6 @@ import idaapi
 import idc
 import ida_kernwin
 
-# Try to import Qt
 try:
     from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QTextBrowser, 
                                     QPushButton, QComboBox, QLabel, QFileDialog, QWidget)
@@ -43,19 +42,15 @@ class SymbioticResultsViewer(idaapi.PluginForm):
         self.results = results
         self.func_line_map = func_line_map or results.get("func_line_map", {})
         self.current_filter = "ALL"
-        self.current_func_filter = "ALL"  # Filter by function
-        self.current_tag_filter = "ALL"    # Filter by tag
+        self.current_func_filter = "ALL"
+        self.current_tag_filter = "ALL"
         self.vulns = []
-        self.ai_results = {}  # Cache for inline AI results
-        self.vuln_tags = {}   # Tags: {vuln_id: "confirmed"|"false_positive"|None}
-        
-        # Load persistent tags
+        self.ai_results = {}
+        self.vuln_tags = {}
+
         self._load_tags()
-        
-        # Load cached AI results
         self._load_ai_cache()
-        
-        # Add to history
+
         _scan_history.append({
             "timestamp": datetime.datetime.now().isoformat(),
             "results": results,
@@ -417,8 +412,9 @@ class SymbioticResultsViewer(idaapi.PluginForm):
         
         def do_ai_call():
             try:
-                from .ai_provider import AIProvider, explain_vulnerability
-                provider = AIProvider(model=config.gemini_model, api_key=config.gemini_api_key)
+                from .ai_provider import AIProvider
+                from .ai_prompts import explain_vulnerability
+                provider = AIProvider(model=config.ai_model, api_key=config.ai_api_key, api_base=config.ai_api_base)
                 explanation = explain_vulnerability(
                     provider,
                     vuln.get("title", "Vulnerability"),
@@ -480,8 +476,9 @@ class SymbioticResultsViewer(idaapi.PluginForm):
         
         def do_ai_call():
             try:
-                from .ai_provider import AIProvider, generate_poc
-                provider = AIProvider(model=config.gemini_model, api_key=config.gemini_api_key)
+                from .ai_provider import AIProvider
+                from .ai_prompts import generate_poc
+                provider = AIProvider(model=config.ai_model, api_key=config.ai_api_key, api_base=config.ai_api_base)
                 poc = generate_poc(
                     provider,
                     vuln.get("title", "Vulnerability"),
