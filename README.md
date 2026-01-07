@@ -55,6 +55,28 @@ This can save significant time during vulnerability research, CTF challenges, or
 | `Ctrl+Shift+L` | Scan ALL functions |
 | `Ctrl+Shift+A` | Ask AI about function |
 
+## AI System
+
+The plugin uses the **OpenAI Python client** to call LLM APIs for vulnerability analysis.
+
+### Supported Providers
+
+| Provider | Direct Support | Endpoint |
+|----------|----------------|----------|
+| **OpenAI** | Yes | `https://api.openai.com/v1` |
+| **Anthropic** | Yes | `https://api.anthropic.com/v1` |
+| **Google Gemini** | Via proxy only | Requires OpenAI-compatible proxy |
+
+### Configuration
+
+Copy `.env.example` to your IDA plugins folder and edit it:
+
+```bash
+cp .env.example /path/to/IDA/plugins/.env
+```
+
+See `.env.example` for all options and available models.
+
 ## Detection Rules
 
 Edit `code-rules.yaml` to add your own patterns:
