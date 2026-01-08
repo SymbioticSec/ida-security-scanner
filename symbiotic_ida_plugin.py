@@ -30,7 +30,7 @@ try:
     with open(os.path.join(PLUGIN_DIR, "ida-plugin.json"), "r") as f:
         VERSION = json.load(f).get("plugin", {}).get("version", "0.0.1")
 except:
-    VERSION = "0.0.1"
+    VERSION = "0.1.2"
 
 
 class ScanCurrentFunctionAction(ida_kernwin.action_handler_t):
