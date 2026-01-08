@@ -12,8 +12,9 @@
       "macos-aarch64"
     ],
     "categories": [
-      "security-analysis",
-      "decompilation"
+      "integration-with-third-parties-interoperability",
+      "decompilation",
+      "vulnerability-research-and-exploit-development"
     ],
     "keywords": [
       "security",
