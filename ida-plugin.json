@@ -5,12 +5,6 @@
     "entryPoint": "symbiotic_ida_plugin",
     "version": "0.0.1",
     "idaVersions": ">=9.0",
-    "platforms": [
-      "windows-x86_64",
-      "linux-x86_64",
-      "macos-x86_64",
-      "macos-aarch64"
-    ],
     "categories": [
       "integration-with-third-parties-interoperability",
       "decompilation",
