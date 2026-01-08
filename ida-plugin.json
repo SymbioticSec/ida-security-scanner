@@ -5,14 +5,18 @@
     "entryPoint": "symbiotic_ida_plugin.py",
     "version": "0.0.1",
     "idaVersions": [
-      "9.0",
       "9.1",
       "9.2"
     ],
+    "platforms": [
+      "windows-x86_64",
+      "linux-x86_64",
+      "macos-x86_64",
+      "macos-aarch64"
+    ],
     "categories": [
-      "integration-with-third-parties-interoperability",
-      "decompilation",
-      "vulnerability-research-and-exploit-development"
+      "vulnerability-research-and-exploit-development",
+      "decompilation"
     ],
     "keywords": [
       "security",
@@ -22,6 +26,10 @@
       "opengrep"
     ],
     "description": "Security scanner combining IDA decompilation with SAST rules to detect vulnerabilities in pseudocode",
+    "pythonDependencies": [
+      "litellm>=1.0.0",
+      "python-dotenv>=1.0.0"
+    ],
     "license": "MIT",
     "urls": {
       "repository": "https://github.com/SymbioticSec/ida-security-scanner"

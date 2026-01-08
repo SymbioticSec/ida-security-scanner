@@ -14,11 +14,15 @@ import ida_funcs
 import idc
 
 PLUGIN_DIR = os.path.dirname(__file__)
+PARENT_DIR = os.path.dirname(PLUGIN_DIR)
+if PARENT_DIR not in sys.path:
+    sys.path.insert(0, PARENT_DIR)
 if PLUGIN_DIR not in sys.path:
     sys.path.insert(0, PLUGIN_DIR)
 
-from symbiotic import SymbioticConfig, SymbioticScanner, SymbioticResultsViewer
-from symbiotic.config import configure_symbiotic
+from config import SymbioticConfig, configure_symbiotic
+from scanner import SymbioticScanner
+from viewer import SymbioticResultsViewer
 
 # Load version from ida-plugin.json
 import json
@@ -268,8 +272,8 @@ Choose an action:"""
 
     def ask_ai_about_function(self):
         """Ask AI to analyze the current function"""
-        from symbiotic.ai_provider import AIProvider
-        from symbiotic.ai_prompts import analyze_function
+        from ai_provider import AIProvider
+        from ai_prompts import analyze_function
         
         if not self.config.is_ai_configured():
             ida_kernwin.warning("AI not configured!\n\nAdd AI_MODEL and AI_API_KEY to .env file")
