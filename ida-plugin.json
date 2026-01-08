@@ -2,9 +2,13 @@
   "IDAMetadataDescriptorVersion": 1,
   "plugin": {
     "name": "ida-security-scanner",
-    "entryPoint": "symbiotic_ida_plugin",
+    "entryPoint": "symbiotic_ida_plugin.py",
     "version": "0.0.1",
-    "idaVersions": ">=9.0",
+    "idaVersions": [
+      "9.0",
+      "9.1",
+      "9.2"
+    ],
     "categories": [
       "integration-with-third-parties-interoperability",
       "decompilation",
