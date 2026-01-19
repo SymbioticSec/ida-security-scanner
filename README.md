@@ -1,4 +1,4 @@
-# IDA Symbiotic
+# IDA Security Scanner
 
 <p align="center">
   <img src="https://img.shields.io/badge/IDA%20Pro-9.1%2B-blue?style=for-the-badge" alt="IDA Pro 9.1+"/>
@@ -12,14 +12,14 @@
 ---
 
 <p align="center">
-  <img src="img/Interface.png" alt="IDA Symbiotic Interface" width="800"/>
+  <img src="img/Interface.png" alt="IDA Security Scanner Interface" width="800"/>
 </p>
 
 ---
 
-## What is IDA Symbiotic?
+## What is IDA Security Scanner?
 
-IDA Symbiotic bridges the gap between **binary reverse engineering** and **static code analysis**. Instead of manually hunting for vulnerabilities in decompiled code, this plugin:
+IDA Security Scanner bridges the gap between **binary reverse engineering** and **static code analysis**. Instead of manually hunting for vulnerabilities in decompiled code, this plugin:
 
 1. **Extracts pseudocode** from IDA's Hex-Rays decompiler
 2. **Runs SAST rules** via [opengrep](https://github.com/opengrep/opengrep) on the C-like output
@@ -88,7 +88,7 @@ See the [AI Integration](#-ai-integration) section below.
 
 ## Detection Rules
 
-IDA Symbiotic uses **YAML-based rules** powered by [opengrep](https://github.com/opengrep/opengrep) (a semgrep fork). Rules are defined in `code-rules.yaml`.
+IDA Security Scanner uses **YAML-based rules** powered by [opengrep](https://github.com/opengrep/opengrep) (a semgrep fork). Rules are defined in `code-rules.yaml`.
 
 ### Adding Custom Rules
 
@@ -134,7 +134,7 @@ rules:
 
 ## AI Integration
 
-IDA Symbiotic can use **LLM APIs** to provide detailed explanations of detected vulnerabilities and suggest exploitation paths.
+IDA Security Scanner can use **LLM APIs** to provide detailed explanations of detected vulnerabilities and suggest exploitation paths.
 
 ### Quick Setup
 
